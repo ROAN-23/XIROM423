@@ -7,15 +7,14 @@
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/js/dflip.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/css/dflip.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/css/themify-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/js/dflip.min.js"></script>
 
     <style>
-        body { margin: 0; background-color: #1a1a1a; }
-        /* Forzamos altura para evitar el colapso del contenedor */
+        body { margin: 0; background-color: #1a1a1a; overflow: hidden; }
         #flipbook-container {
-            width: 100%;
+            width: 100vw;
             height: 100vh;
         }
     </style>
@@ -25,16 +24,24 @@
     <div id="flipbook-container"></div>
 
     <script>
-        // CONFIGURACIÓN
-        // Verifica que el nombre sea EXACTO al archivo en tu repo
+        // CONFIGURACIÓN DEL ARCHIVO
+        // Verificamos que el nombre sea el que me dijiste:
         var pdfSource = "catlogo_xirom.pdf"; 
 
         $(document).ready(function () {
-            $("#flipbook-container").flipBook(pdfSource, {
-                webgl: true, // Cambia a false si tienes problemas de renderizado
-                height: '100%',
-                duration: 800
-            });
+            // Verificamos en consola si la librería cargó correctamente
+            if ($.isFunction($.fn.flipBook)) {
+                console.log("Librería DearFlip cargada. Iniciando catálogo...");
+                $("#flipbook-container").flipBook(pdfSource, {
+                    webgl: true,
+                    height: '100%',
+                    duration: 800
+                });
+            } else {
+                console.error("ERROR: La librería flipBook no se pudo cargar. Revisa los enlaces del CDN.");
+                // Mensaje visual para ti en la pantalla si falla
+                document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:50px;'>Error al cargar la librería. Revisa la consola (F12).</h2>";
+            }
         });
     </script>
 </body>
