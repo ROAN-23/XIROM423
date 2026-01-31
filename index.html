@@ -51,7 +51,7 @@
         <button onclick="enviarWhatsApp()" class="float-btn whatsapp" title="Contactar por WhatsApp">
             <i class="fab fa-whatsapp"></i>
         </button>
-        <a href="https://www.instagram.com/XIROM423" target="_blank" class="float-btn instagram" title="Ver Instagram">
+        <a href="https://www.instagram.com/xirom423?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="float-btn instagram" title="Ver Instagram">
             <i class="fab fa-instagram"></i>
         </a>
     </div>
@@ -66,7 +66,7 @@
 
     <script>
         // --- CONFIGURACIÓN DE CONTACTO ---
-        var telefono = "521XXXXXXXXXX"; // Pon tu número aquí (con código de país)
+        var telefono = "5215514416990"; // Pon tu número aquí (con código de país)
         var archivoPDF = "catlogo_xirom.pdf"; 
 
         function enviarWhatsApp() {
@@ -74,9 +74,9 @@
             var mensaje = "";
             
             if (nombre != null && nombre != "") {
-                mensaje = "¡Hola XIROM423! Mi nombre es " + nombre + ". Estaba viendo su catálogo digital y me interesa cotizar un producto personalizado.";
+                mensaje = "¡Hola XIROM! Mi nombre es " + nombre + ". Estaba viendo su catálogo digital y me interesa cotizar un producto personalizado.";
             } else {
-                mensaje = "¡Hola XIROM423! Estaba viendo su catálogo digital y me gustaría recibir más información sobre sus productos.";
+                mensaje = "¡Hola XIROM! Estaba viendo su catálogo digital y me gustaría recibir más información sobre sus productos.";
             }
             
             var url = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
