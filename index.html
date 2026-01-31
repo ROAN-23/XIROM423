@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5H6GEDBENH"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5H6GEDBENH');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>XIROM423 - Catálogo</title>
+    <title>XIROM423 - Catálogo Digital</title>
     
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
         #flipbook-container { width: 100vw; height: 100vh; }
+        
+        /* Ocultar interfaz por defecto para un look minimalista */
+        .df-ui-controls, .df-ui-wrapper { display: none !important; }
 
         /* Botones Flotantes */
         .social-buttons {
@@ -35,8 +46,7 @@
             cursor: pointer;
             border: none;
         }
-
-        .float-btn:hover { transform: scale(1.1); box-shadow: 0px 6px 20px rgba(0,0,0,0.6); }
+        .float-btn:hover { transform: scale(1.1); }
         .whatsapp { background-color: #25d366; }
         .instagram { background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
     </style>
@@ -65,25 +75,21 @@
     <script src="dflip.min.js"></script>
 
     <script>
-        // --- CONFIGURACIÓN DE CONTACTO ---
-        var telefono = "5215514416990"; // Pon tu número aquí (con código de país)
+        var telefono = "5215514416990"; // <--- CAMBIA ESTO
         var archivoPDF = "catlogo_xirom.pdf"; 
 
         function enviarWhatsApp() {
-            var nombre = prompt("¿Cómo te llamas? (Para personalizar tu mensaje)");
-            var mensaje = "";
+            var nombre = prompt("¿Cómo te llamas?");
+            var mensaje = (nombre != null && nombre != "") 
+                ? "¡Hola XIROM423! Mi nombre es " + nombre + ". Estaba viendo tu catálogo y me interesa un producto personalizado."
+                : "¡Hola XIROM423! Estaba viendo tu catálogo digital y me interesa recibir más información.";
             
-            if (nombre != null && nombre != "") {
-                mensaje = "¡Hola XIROM! Mi nombre es " + nombre + ". Estaba viendo su catálogo digital y me interesa cotizar un producto personalizado.";
-            } else {
-                mensaje = "¡Hola XIROM! Estaba viendo su catálogo digital y me gustaría recibir más información sobre sus productos.";
-            }
+            // Registramos el evento de clic en Analytics (Opcional pero útil)
+            gtag('event', 'click_whatsapp', { 'event_category': 'contacto', 'user_name': nombre });
             
-            var url = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
-            window.open(url, '_blank');
+            window.open("https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje), '_blank');
         }
 
-        // --- INICIALIZACIÓN DEL CATÁLOGO ---
         $(document).ready(function () {
             if (typeof $.fn.flipBook !== 'undefined') {
                 $("#flipbook-container").flipBook(archivoPDF, {
@@ -95,6 +101,9 @@
                     responsiveView: true,
                     singlePageMode: 'auto',
                     enableAutoHeight: true,
+                    hideControls: true, 
+                    allControls: "",
+                    // Motores externos
                     pdfjsSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js",
                     pdfjsWorkerSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js",
                     threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
