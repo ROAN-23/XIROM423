@@ -2,23 +2,40 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>XIROM423 - Catálogo Digital</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XIROM423 - Catálogo</title>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/js/dflip.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/css/dflip.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dearflip/dearflip-free-lite@master/css/themify-icons.min.css">
+
+    <style>
+        body { margin: 0; background-color: #1a1a1a; }
+        /* Forzamos altura para evitar el colapso del contenedor */
+        #flipbook-container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body>
 
     <div id="flipbook-container"></div>
 
     <script>
-        var pdfUrl = "catlogo_xirom.pdf"; // Aquí es donde llamamos a tu archivo
-        var options = {
-            height: 800,
-            duration: 700,
-            backgroundColor: "#222"
-        };
-        var flipBook = $("#flipbook-container").flipBook(pdfUrl, options);
+        // CONFIGURACIÓN
+        // Verifica que el nombre sea EXACTO al archivo en tu repo
+        var pdfSource = "catlogo_xirom.pdf"; 
+
+        $(document).ready(function () {
+            $("#flipbook-container").flipBook(pdfSource, {
+                webgl: true, // Cambia a false si tienes problemas de renderizado
+                height: '100%',
+                duration: 800
+            });
+        });
     </script>
 </body>
 </html>
