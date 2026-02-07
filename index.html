@@ -14,44 +14,72 @@
     <title>XIROM423 - Catálogo Digital</title>
     
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #flipbook-container { width: 100vw; height: 100vh; }
         
-        /* Limpieza de interfaz nativa */
         .df-ui-controls, .df-ui-wrapper, .df-ui-btn { display: none !important; }
 
-        /* Botones Flotantes */
-        .social-buttons {
+        /* Contenedor Lateral de Contacto */
+        .contact-sidebar {
             position: fixed;
-            bottom: 25px;
+            bottom: 20px;
             right: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             z-index: 9999;
         }
 
-        .float-btn {
-            width: 55px;
-            height: 55px;
+        /* Estilo de los Botones con Etiqueta */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .contact-label {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0; /* Oculto por defecto en desktop, aparece al hover */
+            transform: translateX(10px);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .contact-item:hover .contact-label { opacity: 1; transform: translateX(0); }
+
+        .btn-icon {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            text-decoration: none;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-            cursor: pointer;
             border: none;
+            cursor: pointer;
         }
-        .float-btn:hover { transform: scale(1.1); }
-        .whatsapp { background-color: #25d366; }
-        .instagram { background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
-        
-        /* Botón Correo con visibilidad forzada por JS */
-        #btn-correo { background-color: #007bff; display: none; }
+
+        /* Colores de Marca */
+        .whatsapp-bg { background-color: #25d366; }
+        .instagram-bg { background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .email-bg { background-color: #007bff; }
+
+        /* Ajuste para Móviles: Etiquetas siempre visibles pero pequeñas */
+        @media (max-width: 768px) {
+            .contact-label { opacity: 1; transform: translateX(0); font-size: 11px; padding: 4px 10px; }
+            .btn-icon { width: 45px; height: 45px; font-size: 18px; }
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -60,17 +88,20 @@
 </head>
 <body>
 
-    <div class="social-buttons">
-        <a id="btn-correo" href="mailto:xirom432@gmail.com?subject=Cotización%20XIROM423" class="float-btn">
-            <i class="fas fa-envelope"></i>
+    <div class="contact-sidebar">
+        <a href="mailto:xirom432@gmail.com?subject=Envío de Archivos - Cotización XIROM&body=Hola XIROM, adjunto los archivos para mi proyecto..." class="contact-item">
+            <span class="contact-label">Enviar Archivos</span>
+            <div class="btn-icon email-bg"><i class="fas fa-file-upload"></i></div>
         </a>
-        
-        <button onclick="enviarWhatsApp()" class="float-btn whatsapp">
-            <i class="fab fa-whatsapp"></i>
-        </button>
-        
-        <a href="https://www.instagram.com/xirom423?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="float-btn instagram">
-            <i class="fab fa-instagram"></i>
+
+        <div onclick="enviarWhatsApp()" class="contact-item">
+            <span class="contact-label">WhatsApp Cotizaciones</span>
+            <div class="btn-icon whatsapp-bg"><i class="fab fa-whatsapp"></i></div>
+        </div>
+
+        <a href="https://www.instagram.com/xirom423?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="contact-item">
+            <span class="contact-label">Instagram Portfolio</span>
+            <div class="btn-icon instagram-bg"><i class="fab fa-instagram"></i></div>
         </a>
     </div>
 
@@ -83,10 +114,8 @@
     <script src="dflip.min.js"></script>
 
     <script>
-        // DATOS MAESTROS ROAN-23
         var whatsappNumber = "5215514416990"; 
         var archivoPDF = "catlogo_xirom.pdf"; 
-        var paginasObjetivo = [6, 13]; 
 
         function enviarWhatsApp() {
             var nombre = prompt("¿Cómo te llamas?");
@@ -98,36 +127,20 @@
 
         $(document).ready(function () {
             if (typeof $.fn.flipBook !== 'undefined') {
-                var dFlip = $("#flipbook-container").flipBook(archivoPDF, {
+                $("#flipbook-container").flipBook(archivoPDF, {
                     height: "100%",
                     webgl: true,
                     duration: 700,
-                    backgroundColor: "#7A1FFF",
+                    backgroundColor: "#2A2C30",
                     responsiveView: true,
                     singlePageMode: 'auto',
                     enableAutoHeight: true,
                     hideControls: "true",
                     allControls: "",
                     enableLinks: false,
-                    
                     pdfjsSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js",
                     pdfjsWorkerSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js",
-                    threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
-
-                    // LÓGICA DE DETECCIÓN MEJORADA
-                    onFlip: function(flipbook) {
-                        // El motor reporta la página actual. En vista doble, reporta la primera de la pareja.
-                        var p = flipbook.target.page;
-                        
-                        // Revisamos si la página actual o la siguiente (en caso de spread) es una de nuestras metas
-                        var mostrar = paginasObjetivo.includes(p) || paginasObjetivo.includes(p + 1);
-                        
-                        if (mostrar) {
-                            $("#btn-correo").css("display", "flex").hide().fadeIn();
-                        } else {
-                            $("#btn-correo").fadeOut();
-                        }
-                    }
+                    threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
                 });
             }
         });
