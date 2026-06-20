@@ -24,7 +24,7 @@ Este proyecto reúne nuestros productos en un formato moderno y accesible, con s
 ---
 
 ## 🖼️ Vista previa
-![Logotipo XIROM](logotipo.png)
+![Logotipo XIROM](logo.png)
 
 ---
 
