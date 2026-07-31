@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5H6GEDBENH"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-5H6GEDBENH');
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>XIROM423 - Catálogo Digital</title>
@@ -16,11 +8,10 @@
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #flipbook-container { width: 100vw; height: 100vh; }
-        
+
         /* Ocultar interfaz nativa de dFlip */
         .df-ui-controls, .df-ui-wrapper, .df-ui-btn { display: none !important; }
 
-        /* --- LOGO XIROM (Superior Izquierda) --- */
         .brand-logo {
             position: fixed;
             top: 25px;
@@ -32,7 +23,6 @@
         }
         .brand-logo:hover { transform: scale(1.05); }
 
-        /* --- COPYRIGHT (Inferior Izquierda) --- */
         .copyright-label {
             position: fixed;
             bottom: 20px;
@@ -45,7 +35,6 @@
             text-transform: uppercase;
         }
 
-        /* --- PANEL DE CONTACTO (Derecha) --- */
         .contact-sidebar {
             position: fixed;
             bottom: 25px;
@@ -103,15 +92,13 @@
         @media (max-width: 768px) {
             #flipbook-container {
                 width: 100vw !important;
-                height: 100vh !important;
+                height: 100dvh !important; /* pantalla completa dinámica */
             }
 
             .brand-logo { max-width: 80px; top: 15px; left: 15px; }
             .copyright-label { bottom: 10px; left: 15px; font-size: 9px; }
 
-            /* Ocultar nombres de burbujas en móvil */
-            .contact-label { display: none !important; }
-
+            .contact-label { display: none !important; } /* ocultar nombres */
             .btn-icon { width: 42px; height: 42px; font-size: 16px; }
         }
     </style>
@@ -139,7 +126,7 @@
             <div class="btn-icon whatsapp-bg"><i class="fab fa-whatsapp"></i></div>
         </div>
 
-        <a href="https://www.instagram.com/xirom423?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="contact-item">
+        <a href="https://www.instagram.com/xirom423" target="_blank" class="contact-item">
             <span class="contact-label">Síguenos</span>
             <div class="btn-icon instagram-bg"><i class="fab fa-instagram"></i></div>
         </a>
@@ -168,7 +155,8 @@
         $(document).ready(function () {
             if (typeof $.fn.flipBook !== 'undefined') {
                 $("#flipbook-container").flipBook(archivoPDF, {
-                    height: "100%",
+                    width: window.innerWidth,
+                    height: window.innerHeight,
                     webgl: true,
                     duration: 700,
                     backgroundColor: "#121212",
