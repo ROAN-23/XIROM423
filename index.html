@@ -7,43 +7,34 @@
     
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .pdf-container { width: 100vw; height: 100vh; display: none; }
-        .active { display: block; }
+        #flipbook-container { width: 100vw; height: 100vh; }
 
         /* Ocultar interfaz nativa de dFlip */
         .df-ui-controls, .df-ui-wrapper, .df-ui-btn { display: none !important; }
 
         .brand-logo {
             position: fixed;
-            top: 15px;
-            left: 15px;
+            top: 25px;
+            left: 25px;
             z-index: 10000;
-            max-width: 100px;
+            max-width: 120px;
+            filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
         }
+        .brand-logo:hover { transform: scale(1.05); }
 
-        /* Barra de navegación fija */
-        .nav-bar {
+        .copyright-label {
             position: fixed;
-            top: 15px;
-            right: 15px;
+            bottom: 20px;
+            left: 25px;
             z-index: 10000;
-            display: flex;
-            gap: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            letter-spacing: 1px;
+            pointer-events: none;
+            text-transform: uppercase;
         }
 
-        .nav-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .nav-btn:hover { background-color: #0056b3; }
-
-        /* Panel de contacto (derecha inferior) */
         .contact-sidebar {
             position: fixed;
             bottom: 25px;
@@ -97,30 +88,33 @@
         .instagram-bg { background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
         .email-bg { background-color: #007bff; }
 
-        /* Ajustes móviles */
+        /* Ajustes para móviles */
         @media (max-width: 768px) {
-            .brand-logo { max-width: 70px; }
-            .nav-btn { font-size: 12px; padding: 6px 10px; }
-            .contact-label { display: none !important; } /* ocultar nombres en móvil */
+            #flipbook-container {
+                width: 100vw !important;
+                height: 100dvh !important; /* pantalla completa dinámica */
+            }
+
+            .brand-logo { max-width: 80px; top: 15px; left: 15px; }
+            .copyright-label { bottom: 10px; left: 15px; font-size: 9px; }
+
+            .contact-label { display: none !important; } /* ocultar nombres */
             .btn-icon { width: 42px; height: 42px; font-size: 16px; }
         }
     </style>
 
-    <link rel="stylesheet" href="dflip.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="dflip.min.css">
+    <link rel="stylesheet" href="themify-icons.min.css">
 </head>
 <body>
 
     <img src="logo.png" alt="XIROM423 Logo" class="brand-logo">
 
-    <!-- Barra de navegación fija -->
-    <div class="nav-bar">
-        <button class="nav-btn" onclick="mostrarPDF('catalogo')">Catálogo</button>
-        <button class="nav-btn" onclick="mostrarPDF('portafolio')">Portafolio</button>
-        <button class="nav-btn" onclick="mostrarPDF('inicio')">Inicio</button>
+    <div class="copyright-label">
+        © 2026 XIROM423. TODOS LOS DERECHOS RESERVADOS.
     </div>
 
-    <!-- Panel de contacto -->
     <div class="contact-sidebar">
         <a href="mailto:xirom432@gmail.com?subject=Envío de Archivos - XIROM&body=Hola XIROM, adjunto archivos..." class="contact-item">
             <span class="contact-label">Enviar Archivos</span>
@@ -138,19 +132,17 @@
         </a>
     </div>
 
-    <!-- Contenedores -->
-    <div id="catalogo-container" class="pdf-container active"></div>
-    <div id="portafolio-container" class="pdf-container"></div>
-    <div id="inicio-container" class="pdf-container"></div>
+    <div id="flipbook-container"></div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
     <script src="dflip.min.js"></script>
 
     <script>
         var whatsappNumber = "5215514416990"; 
-        var archivoCatalogo = "catlogo_xirom.pdf";
-        var archivoPortafolio = "portafolio_temporada.pdf";
-        var archivoInicio = "inicio.pdf"; // opcional, puede ser portada o presentación
+        var archivoPDF = "catlogo_xirom.pdf"; 
 
         function enviarWhatsApp() {
             var nombre = prompt("¿Cómo te llamas?");
@@ -160,35 +152,23 @@
             window.open("https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(mensaje), '_blank');
         }
 
-        function mostrarPDF(seccion) {
-            document.querySelectorAll(".pdf-container").forEach(el => el.classList.remove("active"));
-            document.getElementById(seccion + "-container").classList.add("active");
-        }
-
         $(document).ready(function () {
             if (typeof $.fn.flipBook !== 'undefined') {
-                $("#catalogo-container").flipBook(archivoCatalogo, {
+                $("#flipbook-container").flipBook(archivoPDF, {
                     width: window.innerWidth,
                     height: window.innerHeight,
+                    webgl: true,
+                    duration: 700,
                     backgroundColor: "#121212",
                     responsiveView: true,
-                    singlePageMode: 'auto'
-                });
-
-                $("#portafolio-container").flipBook(archivoPortafolio, {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                    backgroundColor: "#121212",
-                    responsiveView: true,
-                    singlePageMode: 'auto'
-                });
-
-                $("#inicio-container").flipBook(archivoInicio, {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                    backgroundColor: "#121212",
-                    responsiveView: true,
-                    singlePageMode: 'auto'
+                    singlePageMode: 'auto',
+                    enableAutoHeight: true,
+                    hideControls: "true",
+                    allControls: "",
+                    enableLinks: false,
+                    pdfjsSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js",
+                    pdfjsWorkerSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js",
+                    threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
                 });
             }
         });
