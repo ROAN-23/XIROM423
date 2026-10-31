@@ -1,30 +1,68 @@
 /*
-  XIROM | Catalogo — Pantalla de espera
-  NO calcula porcentajes ni descarga el PDF por segunda vez.
-  Espera el callback onReady del visor dFlip.
-  No expone un enlace directo al archivo PDF.
-*/
+ * XIROM | Catalogo — Animacion de carga SEGURA v3.0
+ * Se integra con el CSS existente. No toca el PDF ni el visor dFlip.
+ * - Respeta el logotipo y el eslogan oficiales.
+ * - Nunca ofrece un enlace de descarga ni de apertura directa al PDF.
+ * - Si el visor avisa onReady, desaparece al estar listo.
+ * - Si el visor NO avisa, desaparece de todos modos en 4 segundos.
+ *   De esta forma no puede ocultar indefinidamente el catalogo.
+ */
 (function () {
   'use strict';
 
   var ID = 'xirom-catalog-loader';
-  var TEMPO_AVISO_MS = 12000; // Solo muestra una alternativa, NO es tiempo de cierre.
+  var TIEMPO_MAXIMO_MS = 4000;  // Limite de SEGURIDAD de la pantalla, no del PDF.
+  var TIEMPO_MINIMO_MS = 650;   // Aparicion breve sin retrasar mucho el catalogo.
+  var DURACION_SALIDA_MS = 680;
+  var startedAt = Date.now();
   var loader = null;
-  var done = false;
-  var alertTimer = null;
+  var finished = false;
+  var safeExitTimer = null;
+  var pendingExitTimer = null;
+
+  function closeLoader() {
+    if (finished) return;
+    finished = true;
+    window.clearTimeout(safeExitTimer);
+    window.clearTimeout(pendingExitTimer);
+
+    var viewer = document.getElementById('flipbook-container');
+    if (viewer) viewer.removeAttribute('aria-busy');
+    if (!loader) return;
+
+    // La clase ya esta definida en xirom-loader.css: fundido + sin bloquear clics.
+    loader.classList.add('xirom-loader--done');
+    loader.setAttribute('aria-hidden', 'true');
+    var toRemove = loader;
+    window.setTimeout(function () {
+      if (toRemove.parentNode) toRemove.parentNode.removeChild(toRemove);
+      if (loader === toRemove) loader = null;
+    }, DURACION_SALIDA_MS);
+  }
+
+  function finish() {
+    if (finished) return;
+    var remaining = TIEMPO_MINIMO_MS - (Date.now() - startedAt);
+    if (remaining > 0) {
+      window.clearTimeout(pendingExitTimer);
+      pendingExitTimer = window.setTimeout(closeLoader, remaining);
+    } else {
+      closeLoader();
+    }
+  }
 
   function mount() {
-    if (loader) return loader;
-    if (!document.body) return null;
-
+    if (finished || loader || !document.body) return;
+    startedAt = Date.now();
     loader = document.createElement('section');
     loader.id = ID;
     loader.className = 'xirom-loader';
     loader.setAttribute('role', 'status');
     loader.setAttribute('aria-live', 'polite');
-    loader.setAttribute('aria-label', 'Preparando el catálogo XIROM');
+    loader.setAttribute('aria-label', 'Preparando el catalogo XIROM');
 
-    // Usamos el mismo logo.png que ya utiliza la pagina, sin redibujarlo.
+    // Mantiene las clases del archivo xirom-loader.css que ya esta publicado.
+    // No hay enlaces al PDF, botones para descargar ni «Reintentar carga».
     loader.innerHTML = [
       '<div class="xirom-loader__layout">',
       '  <p class="xirom-loader__eyebrow">XIROM / CATÁLOGO</p>',
@@ -38,65 +76,46 @@
       '  <p class="xirom-loader__motto">La forma de lo invisible.</p>',
       '  <div class="xirom-loader__bar" aria-hidden="true"></div>',
       '  <p class="xirom-loader__status">PREPARANDO EL CATÁLOGO</p>',
-      '  <button class="xirom-loader__retry" type="button">Reintentar carga</button>',
       '</div>'
     ].join('');
     document.body.appendChild(loader);
+    var viewer = document.getElementById('flipbook-container');
+    if (viewer) viewer.setAttribute('aria-busy', 'true');
 
-    var retry = loader.querySelector('.xirom-loader__retry');
-    retry.addEventListener('click', function () { window.location.reload(); });
-
-    var flipbook = document.getElementById('flipbook-container');
-    if (flipbook) flipbook.setAttribute('aria-busy', 'true');
-
-    alertTimer = window.setTimeout(function () {
-      if (done || !loader) return;
-      loader.classList.add('xirom-loader--slow');
-      setStatus('La carga está tardando más de lo habitual');
-    }, TEMPO_AVISO_MS);
-    return loader;
+    // Pase lo que pase, retiramos la capa como maximo a los 4 segundos.
+    // Si el PDF sigue descargandose, se vera el visor de dFlip cargando,
+    // pero ya no tendremos la pantalla personalizada bloqueandolo.
+    safeExitTimer = window.setTimeout(closeLoader, TIEMPO_MAXIMO_MS);
   }
 
-  function setStatus(message) {
-    if (!loader) return;
-    var status = loader.querySelector('.xirom-loader__status');
-    if (status) status.textContent = message;
-  }
-
-  function finish() {
-    if (done) return;
-    done = true;
-    window.clearTimeout(alertTimer);
-    var flipbook = document.getElementById('flipbook-container');
-    if (flipbook) flipbook.setAttribute('aria-busy', 'false');
-    if (!loader) return;
-
-    // Dos frames para permitir que el navegador pinte el libro ya preparado.
-    window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () {
-        if (!loader) return;
-        loader.classList.add('xirom-loader--done');
-        window.setTimeout(function () {
-          if (loader) { loader.remove(); loader = null; }
-        }, 760);
-      });
-    });
-  }
-
-  function fail() {
-    window.clearTimeout(alertTimer);
-    if (!loader) mount();
-    if (!loader) return;
-    loader.classList.add('xirom-loader--slow');
-    setStatus('No se pudo iniciar el visor. Pulsa Reintentar carga.');
-  }
-
+  // API compatible con la integracion original y con el index.html v2.
   window.XIROMCatalogLoader = {
     finish: finish,
-    fail: fail
+    fail: function () { finish(); }
   };
 
-  // Se carga DESPUES del div #flipbook-container y ANTES del script que inicia dFlip.
-  if (document.body) mount();
-  else document.addEventListener('DOMContentLoaded', mount, { once: true });
+  // Versiones de DearFlip que exponen defaults permiten recibir onReady
+  // incluso si index.html no lo define. Si no existe, el temporizador protege.
+  try {
+    if (window.DFLIP && window.DFLIP.defaults) {
+      var oldOnReady = window.DFLIP.defaults.onReady;
+      window.DFLIP.defaults.onReady = function () {
+        try {
+          if (typeof oldOnReady === 'function') {
+            oldOnReady.apply(this, arguments);
+          }
+        } finally {
+          finish();
+        }
+      };
+    }
+  } catch (err) {
+    // El visor no depende de este hook: dejamos que siga trabajando.
+  }
+
+  if (document.body) {
+    mount();
+  } else {
+    document.addEventListener('DOMContentLoaded', mount, { once: true });
+  }
 })();
