@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="es">
-<link rel="stylesheet" href="xirom-loader.css">    
+<html lang="es">  
 <head>
+    <link rel="stylesheet" href="xirom-loader.css">  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>XIROM423 - Catálogo Digital</title>
@@ -185,10 +185,18 @@
                     hideControls: "true",
                     allControls: "",
                     enableLinks: false,
+                    
                     pdfjsSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js",
                     pdfjsWorkerSrc: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js",
-                    threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-                });
+                    threejsSrc: "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+
+                    onReady: function () {
+                        if (window.XIROMCatalogLoader) {
+                            window.XIROMCatalogLoader.finish();
+                        }
+                    }
+                    });
+
             }
         });
     </script>
