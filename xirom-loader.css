@@ -1,0 +1,272 @@
+/*
+  XIROM | Catalogo — Pantalla de espera
+  Concepto: la forma de lo invisible
+  100% CSS: no GIF, video ni tipografias externas.
+  Paleta usada: negro obsidiana, blanco mineral, azul mineral,
+  violeta ceniza, jade industrial y gris acero.
+*/
+
+#xirom-catalog-loader,
+#xirom-catalog-loader * {
+  box-sizing: border-box;
+}
+
+#xirom-catalog-loader {
+  --xirom-ink: #0F1115;
+  --xirom-white: #ECE9E2;
+  --xirom-steel: #7A828C;
+  --xirom-blue: #376DA4;
+  --xirom-violet: #6C538F;
+  --xirom-jade: #477A68;
+
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 28px 18px;
+  color: var(--xirom-white);
+  background:
+    radial-gradient(ellipse 76% 44% at 49% 46%, rgba(55,109,164,.17), transparent 73%),
+    radial-gradient(ellipse 57% 50% at 83% 85%, rgba(108,83,143,.11), transparent 81%),
+    linear-gradient(153deg, #111317 4%, #1D2026 51%, #0F1115 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .62s ease, visibility .62s ease;
+}
+
+/* Superficie sutil tipo concreto, fabricada solo con CSS */
+#xirom-catalog-loader::before {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 7px, rgba(236,233,226,.016) 8px 9px),
+    repeating-linear-gradient(89deg, transparent 0 17px, rgba(236,233,226,.013) 18px 19px);
+  opacity: .5;
+  transform: rotate(-5deg) scale(1.1);
+  animation: xirom-texture-drift 18s ease-in-out infinite alternate;
+}
+
+#xirom-catalog-loader::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(122,130,140,.16);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.xirom-loader__layout {
+  position: relative;
+  width: min(100%, 490px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+  animation: xirom-stage-arrive 1.05s both cubic-bezier(.22,.8,.22,1);
+}
+
+.xirom-loader__eyebrow {
+  margin: 0 0 32px;
+  color: var(--xirom-steel);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+
+.xirom-loader__symbol {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(210px, 57vw, 292px);
+  height: clamp(210px, 57vw, 292px);
+  margin-bottom: 14px;
+}
+
+.xirom-loader__outline {
+  position: absolute;
+  inset: 7%;
+  border: 1px solid rgba(236,233,226,.09);
+  transform: rotate(45deg) scale(.78);
+  animation: xirom-framing 5s ease-in-out infinite alternate;
+}
+
+.xirom-loader__outline::after {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border: 1px solid rgba(122,130,140,.24);
+}
+
+.xirom-loader__orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -88deg,
+    transparent 0 9%,
+    rgba(55,109,164,.68) 10%, transparent 15% 37%,
+    rgba(71,122,104,.58) 41%, transparent 47% 73%,
+    rgba(108,83,143,.66) 78%, transparent 84%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  opacity: .7;
+  animation: xirom-orbit 13s linear infinite;
+}
+
+.xirom-loader__orbit--inner {
+  inset: 20px;
+  opacity: .36;
+  animation-duration: 17s;
+  animation-direction: reverse;
+}
+
+.xirom-loader__logo {
+  position: relative;
+  display: block;
+  width: 63%;
+  height: 63%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 25px rgba(55,109,164,.28));
+  animation: xirom-logo-reveal 2.6s cubic-bezier(.22,.75,.34,1) both,
+             xirom-logo-breathe 5.5s ease-in-out 2.6s infinite;
+}
+
+.xirom-loader__brand {
+  margin: 0 0 11px;
+  padding-left: .34em;
+  color: var(--xirom-white);
+  font-size: clamp(24px, 6.8vw, 37px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: .34em;
+}
+
+.xirom-loader__motto {
+  margin: 0;
+  font-size: clamp(12px, 3vw, 14px);
+  line-height: 1.5;
+  letter-spacing: .04em;
+  color: rgba(236,233,226,.75);
+}
+
+.xirom-loader__bar {
+  width: clamp(145px, 42vw, 192px);
+  height: 1px;
+  position: relative;
+  overflow: hidden;
+  margin: 38px 0 15px;
+  background: rgba(122,130,140,.35);
+}
+
+.xirom-loader__bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, var(--xirom-blue), var(--xirom-jade), transparent);
+  transform: translateX(-120%);
+  animation: xirom-loading-sweep 1.7s ease-in-out infinite;
+}
+
+.xirom-loader__status {
+  min-height: 2em;
+  max-width: 330px;
+  margin: 0;
+  color: var(--xirom-steel);
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.6;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+
+.xirom-loader__link {
+  display: inline-block;
+  margin-top: 20px;
+  color: rgba(236,233,226,.72);
+  font-size: 11px;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color .2s ease;
+}
+
+.xirom-loader__link:hover,
+.xirom-loader__link:focus-visible {
+  color: var(--xirom-white);
+}
+
+.xirom-loader__retry {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 14px;
+  color: var(--xirom-white);
+  background: transparent;
+  border: 1px solid rgba(122,130,140,.6);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.xirom-loader--slow .xirom-loader__retry {
+  display: inline-block;
+}
+
+.xirom-loader--done {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@keyframes xirom-logo-reveal {
+  0% { opacity: 0; transform: scale(.84); filter: blur(8px) drop-shadow(0 0 0 transparent); }
+  70% { opacity: 1; filter: blur(0) drop-shadow(0 0 28px rgba(55,109,164,.37)); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0) drop-shadow(0 0 25px rgba(55,109,164,.28)); }
+}
+@keyframes xirom-logo-breathe {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.028); }
+}
+@keyframes xirom-loading-sweep {
+  0% { transform: translateX(-120%); }
+  65%,100% { transform: translateX(370%); }
+}
+@keyframes xirom-orbit { to { transform: rotate(360deg); } }
+@keyframes xirom-framing {
+  from { transform: rotate(45deg) scale(.76); opacity: .4; }
+  to   { transform: rotate(45deg) scale(.9); opacity: 1; }
+}
+@keyframes xirom-texture-drift {
+  from { transform: rotate(-5deg) translate(-1%,0) scale(1.1); }
+  to { transform: rotate(-5deg) translate(1%,1%) scale(1.1); }
+}
+@keyframes xirom-stage-arrive {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #xirom-catalog-loader *,
+  #xirom-catalog-loader::before,
+  #xirom-catalog-loader::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  #xirom-catalog-loader {
+    transition: none !important;
+  }
+}
+@media (max-width: 360px) {
+  .xirom-loader__eyebrow { margin-bottom: 20px; }
+  .xirom-loader__symbol { width: 190px; height: 190px; }
+  .xirom-loader__bar { margin-top: 26px; }
+}
