@@ -1,121 +1,224 @@
-/*
- * XIROM | Catalogo — Animacion de carga SEGURA v3.0
- * Se integra con el CSS existente. No toca el PDF ni el visor dFlip.
- * - Respeta el logotipo y el eslogan oficiales.
- * - Nunca ofrece un enlace de descarga ni de apertura directa al PDF.
- * - Si el visor avisa onReady, desaparece al estar listo.
- * - Si el visor NO avisa, desaparece de todos modos en 4 segundos.
- *   De esta forma no puede ocultar indefinidamente el catalogo.
- */
 (function () {
-  'use strict';
+  if (window.XIROMCatalogLoader) return;
 
-  var ID = 'xirom-catalog-loader';
-  var TIEMPO_MAXIMO_MS = 4000;  // Limite de SEGURIDAD de la pantalla, no del PDF.
-  var TIEMPO_MINIMO_MS = 650;   // Aparicion breve sin retrasar mucho el catalogo.
-  var DURACION_SALIDA_MS = 680;
-  var startedAt = Date.now();
-  var loader = null;
-  var finished = false;
-  var safeExitTimer = null;
-  var pendingExitTimer = null;
+  let overlay = null;
+  let finished = false;
+  let failSafeTimer = null;
 
-  function closeLoader() {
-    if (finished) return;
-    finished = true;
-    window.clearTimeout(safeExitTimer);
-    window.clearTimeout(pendingExitTimer);
+  const FADE_DURATION = 800;
+  const MAX_WAIT = 4000;
+  const LOGO_URL = 'https://roan-23.github.io/XIROM423/logo.png';
 
-    var viewer = document.getElementById('flipbook-container');
-    if (viewer) viewer.removeAttribute('aria-busy');
-    if (!loader) return;
+  function injectStyles() {
+    if (document.getElementById('xirom-loader-dynamic-styles')) return;
 
-    // La clase ya esta definida en xirom-loader.css: fundido + sin bloquear clics.
-    loader.classList.add('xirom-loader--done');
-    loader.setAttribute('aria-hidden', 'true');
-    var toRemove = loader;
-    window.setTimeout(function () {
-      if (toRemove.parentNode) toRemove.parentNode.removeChild(toRemove);
-      if (loader === toRemove) loader = null;
-    }, DURACION_SALIDA_MS);
+    const style = document.createElement('style');
+    style.id = 'xirom-loader-dynamic-styles';
+    style.textContent = `
+      :root{
+        --xrm-bg-1:#0b0f16;
+        --xrm-bg-2:#050608;
+        --xrm-line:rgba(255,255,255,.03);
+        --xrm-white:#f6f4ef;
+      }
+
+      html, body {
+        min-height: 100%;
+      }
+
+      body{
+        background:
+          linear-gradient(var(--xrm-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--xrm-line) 1px, transparent 1px),
+          radial-gradient(1100px 680px at 50% 0%, rgba(63,108,184,.16), transparent 60%),
+          radial-gradient(900px 560px at 14% 82%, rgba(63,144,121,.11), transparent 58%),
+          radial-gradient(900px 560px at 86% 78%, rgba(121,78,184,.11), transparent 58%),
+          linear-gradient(180deg, var(--xrm-bg-1) 0%, var(--xrm-bg-2) 100%) !important;
+        background-size: 56px 56px, 56px 56px, auto, auto, auto, auto !important;
+        background-attachment: fixed !important;
+      }
+
+      #flipbook,
+      .df-ui,
+      .df-container,
+      .df-app,
+      .df-book-wrapper,
+      .df-wrapper{
+        background: transparent !important;
+      }
+
+      .xirom-loader-overlay{
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(1000px 650px at 50% 10%, rgba(69,110,181,.15), transparent 60%),
+          radial-gradient(850px 500px at 16% 82%, rgba(64,141,122,.10), transparent 58%),
+          radial-gradient(850px 500px at 84% 78%, rgba(122,77,181,.10), transparent 58%),
+          linear-gradient(180deg, rgba(8,11,16,.98) 0%, rgba(5,6,8,.985) 100%);
+        opacity: 1;
+        visibility: visible;
+        transition: opacity .8s ease, visibility .8s ease, transform .8s ease;
+      }
+
+      .xirom-loader-overlay.is-hiding{
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: scale(1.01);
+      }
+
+      .xirom-loader-card{
+        width: min(100%, 480px);
+        text-align: center;
+        color: var(--xrm-white);
+      }
+
+      .xirom-loader-top{
+        font-size: 12px;
+        letter-spacing: .38em;
+        text-transform: uppercase;
+        opacity: .72;
+        margin-bottom: 24px;
+      }
+
+      .xirom-loader-symbol{
+        position: relative;
+        width: clamp(150px, 36vw, 260px);
+        height: clamp(150px, 36vw, 260px);
+        margin: 0 auto 28px;
+        display: grid;
+        place-items: center;
+        animation: xiromFloat 5s ease-in-out infinite;
+      }
+
+      .xirom-loader-symbol::before,
+      .xirom-loader-symbol::after{
+        content:"";
+        position:absolute;
+        inset: 12%;
+        border: 1px solid rgba(255,255,255,.08);
+        transform: rotate(45deg);
+      }
+
+      .xirom-loader-symbol::after{
+        inset: -4%;
+        border-color: rgba(103,132,195,.16);
+      }
+
+      .xirom-loader-symbol img{
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 0 24px rgba(255,255,255,.09));
+      }
+
+      .xirom-loader-title{
+        margin: 0 0 12px;
+        font-size: clamp(48px, 11vw, 76px);
+        font-weight: 800;
+        letter-spacing: .26em;
+        text-indent: .26em;
+      }
+
+      .xirom-loader-subtitle{
+        margin: 0 0 24px;
+        font-size: clamp(18px, 4.2vw, 24px);
+        color: rgba(246,244,239,.95);
+      }
+
+      .xirom-loader-bar{
+        width: min(280px, 78vw);
+        height: 1px;
+        margin: 0 auto;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.6) 50%, transparent 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .xirom-loader-bar::after{
+        content:"";
+        position:absolute;
+        top:0;
+        left:-35%;
+        width:35%;
+        height:100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent);
+        animation: xiromSweep 1.8s ease-in-out infinite;
+      }
+
+      @keyframes xiromSweep{
+        0%{ left:-35%; }
+        100%{ left:100%; }
+      }
+
+      @keyframes xiromFloat{
+        0%,100%{ transform: translateY(0); }
+        50%{ transform: translateY(-8px); }
+      }
+
+      @media (prefers-reduced-motion: reduce){
+        .xirom-loader-overlay,
+        .xirom-loader-symbol,
+        .xirom-loader-bar::after{
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function createOverlay() {
+    overlay = document.createElement('div');
+    overlay.className = 'xirom-loader-overlay';
+    overlay.innerHTML = `
+      <div class="xirom-loader-card">
+        <div class="xirom-loader-top">XIROM / CATÁLOGO</div>
+        <div class="xirom-loader-symbol">
+          <img src="${LOGO_URL}" alt="XIROM">
+        </div>
+        <h1 class="xirom-loader-title">XIROM</h1>
+        <p class="xirom-loader-subtitle">La forma de lo invisible.</p>
+        <div class="xirom-loader-bar" aria-hidden="true"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
   }
 
   function finish() {
-    if (finished) return;
-    var remaining = TIEMPO_MINIMO_MS - (Date.now() - startedAt);
-    if (remaining > 0) {
-      window.clearTimeout(pendingExitTimer);
-      pendingExitTimer = window.setTimeout(closeLoader, remaining);
-    } else {
-      closeLoader();
-    }
+    if (finished || !overlay) return;
+
+    finished = true;
+    clearTimeout(failSafeTimer);
+
+    overlay.classList.add('is-hiding');
+
+    setTimeout(() => {
+      if (overlay && overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      overlay = null;
+    }, FADE_DURATION + 40);
   }
 
-  function mount() {
-    if (finished || loader || !document.body) return;
-    startedAt = Date.now();
-    loader = document.createElement('section');
-    loader.id = ID;
-    loader.className = 'xirom-loader';
-    loader.setAttribute('role', 'status');
-    loader.setAttribute('aria-live', 'polite');
-    loader.setAttribute('aria-label', 'Preparando el catalogo XIROM');
+  function init() {
+    injectStyles();
+    createOverlay();
 
-    // Mantiene las clases del archivo xirom-loader.css que ya esta publicado.
-    // No hay enlaces al PDF, botones para descargar ni «Reintentar carga».
-    loader.innerHTML = [
-      '<div class="xirom-loader__layout">',
-      '  <p class="xirom-loader__eyebrow">XIROM / CATÁLOGO</p>',
-      '  <div class="xirom-loader__symbol" aria-hidden="true">',
-      '    <div class="xirom-loader__outline"></div>',
-      '    <div class="xirom-loader__orbit"></div>',
-      '    <div class="xirom-loader__orbit xirom-loader__orbit--inner"></div>',
-      '    <img class="xirom-loader__logo" src="logo.png" alt="">',
-      '  </div>',
-      '  <h2 class="xirom-loader__brand">XIROM</h2>',
-      '  <p class="xirom-loader__motto">La forma de lo invisible.</p>',
-      '  <div class="xirom-loader__bar" aria-hidden="true"></div>',
-      '  <p class="xirom-loader__status">PREPARANDO EL CATÁLOGO</p>',
-      '</div>'
-    ].join('');
-    document.body.appendChild(loader);
-    var viewer = document.getElementById('flipbook-container');
-    if (viewer) viewer.setAttribute('aria-busy', 'true');
-
-    // Pase lo que pase, retiramos la capa como maximo a los 4 segundos.
-    // Si el PDF sigue descargandose, se vera el visor de dFlip cargando,
-    // pero ya no tendremos la pantalla personalizada bloqueandolo.
-    safeExitTimer = window.setTimeout(closeLoader, TIEMPO_MAXIMO_MS);
+    failSafeTimer = setTimeout(finish, MAX_WAIT);
   }
 
-  // API compatible con la integracion original y con el index.html v2.
-  window.XIROMCatalogLoader = {
-    finish: finish,
-    fail: function () { finish(); }
-  };
-
-  // Versiones de DearFlip que exponen defaults permiten recibir onReady
-  // incluso si index.html no lo define. Si no existe, el temporizador protege.
-  try {
-    if (window.DFLIP && window.DFLIP.defaults) {
-      var oldOnReady = window.DFLIP.defaults.onReady;
-      window.DFLIP.defaults.onReady = function () {
-        try {
-          if (typeof oldOnReady === 'function') {
-            oldOnReady.apply(this, arguments);
-          }
-        } finally {
-          finish();
-        }
-      };
-    }
-  } catch (err) {
-    // El visor no depende de este hook: dejamos que siga trabajando.
-  }
-
-  if (document.body) {
-    mount();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    document.addEventListener('DOMContentLoaded', mount, { once: true });
+    init();
   }
+
+  window.XIROMCatalogLoader = {
+    finish
+  };
 })();
